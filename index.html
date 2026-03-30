@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎭 Guess Who - Multiplayer Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #8b5cf6;
+      --primary-dark: #6d28d9;
+      --secondary: #ec4899;
+      --background: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #334155;
+      --text: #f1f5f9;
+      --text-muted: #cbd5e1;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--background) 0%, #1a1f3a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ============ GENERAL STYLES ============ */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 30px 20px 20px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    input {
+      background: var(--surface);
+      border: 2px solid var(--surface-light);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* ============ SCREENS ============ */
+    .screen {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ============ START SCREEN ============ */
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      gap: 30px;
+    }
+
+    .start-screen h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .mode-selector {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .mode-card {
+      background: var(--surface);
+      border: 2px solid var(--surface-light);
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 250px;
+    }
+
+    .mode-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+    }
+
+    .mode-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .mode-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-width: 300px;
+      width: 100%;
+      margin: 20px auto;
+    }
+
+    .input-group label {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ============ MATCHMAKING SCREEN ============ */
+    .matchmaking-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      gap: 30px;
+    }
+
+    .waiting-animation {
+      font-size: 3rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+      }
+    }
+
+    .queue-info {
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      border-left: 4px solid var(--primary);
+    }
+
+    /* ============ GAME SCREEN ============ */
+    .game-screen {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      min-height: calc(100vh - 200px);
+    }
+
+    @media (max-width: 1200px) {
+      .game-screen {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .game-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .game-header {
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 12px;
+      border-left: 4px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .player-name {
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .turn-indicator {
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .turn-indicator.inactive {
+      color: var(--text-muted);
+    }
+
+    /* ============ CHARACTER GRID ============ */
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 12px;
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .character-card {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, var(--surface-light) 0%, var(--background) 100%);
+      border: 2px solid var(--surface-light);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .character-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .character-card.flipped {
+      background: var(--primary);
+      border-color: var(--primary);
+      opacity: 0.6;
+    }
+
+    .character-card.guessed {
+      background: var(--success);
+      border-color: var(--success);
+      opacity: 0.4;
+    }
+
+    .character-avatar {
+      font-size: 2rem;
+      margin-bottom: 5px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+    
+    .character-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .character-name {
+      font-size: 0.75rem;
+      text-align: center;
+      font-weight: 600;
+      max-width: 90%;
+      word-break: break-word;
+    }
+
+    /* ============ QUESTION SECTION ============ */
+    .question-section {
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .question-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .question-input-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .question-input-group input {
+      flex: 1;
+    }
+
+    .question-input-group button {
+      padding: 12px 20px;
+      min-width: 80px;
+    }
+
+    .waiting-for-question {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .question-prompt {
+      background: var(--primary);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      word-wrap: break-word;
+    }
+
+    .answer-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .answer-buttons button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .yes-btn {
+      background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    }
+
+    .no-btn {
+      background: linear-gradient(135deg, var(--error) 0%, #dc2626 100%);
+    }
+
+    /* ============ CHAT HISTORY ============ */
+    .chat-history {
+      background: var(--surface);
+      padding: 20px;
+      border-radius: 12px;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+
+    .chat-history h3 {
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+
+    .chat-message {
+      background: var(--background);
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid var(--primary);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .chat-message.answer {
+      border-left-color: var(--secondary);
+    }
+
+    .chat-question {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .chat-answer {
+      font-weight: 600;
+      color: var(--secondary);
+    }
+
+    .chat-empty {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px;
+      font-style: italic;
+    }
+
+    /* ============ END SCREEN ============ */
+    .end-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      gap: 30px;
+      text-align: center;
+    }
+
+    .result-card {
+      background: var(--surface);
+      padding: 50px 30px;
+      border-radius: 12px;
+      max-width: 500px;
+      border-top: 4px solid var(--primary);
+    }
+
+    .result-emoji {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    .result-text {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .result-details {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .restart-button {
+      background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+      padding: 15px 40px;
+      font-size: 1.1rem;
+    }
+
+    .home-button {
+      background: linear-gradient(135deg, var(--text-muted) 0%, var(--text) 100%);
+      padding: 12px 30px;
+      margin-top: 15px;
+    }
+
+    /* ============ ERROR / ALERTS ============ */
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert.error {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 4px solid var(--error);
+      color: #fca5a5;
+    }
+
+    .alert.warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 4px solid var(--warning);
+      color: #fcd34d;
+    }
+
+    .alert.info {
+      background: rgba(139, 92, 246, 0.1);
+      border-left: 4px solid var(--primary);
+      color: #ddd6fe;
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .game-screen {
+        grid-template-columns: 1fr;
+      }
+
+      .character-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 8px;
+      }
+
+      .mode-card {
+        min-width: 200px;
+        padding: 20px;
+      }
+
+      .result-card {
+        padding: 30px 20px;
+      }
+
+      .result-emoji {
+        font-size: 3rem;
+      }
+
+      .result-text {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎭 Guess Who</h1>
+      <p class="subtitle">Multiplayer Deduction Game</p>
+    </header>
+
+    <!-- START SCREEN -->
+    <div id="startScreen" class="screen active">
+      <div class="start-screen">
+        <h2>Choose Game Mode</h2>
+        
+        <div class="mode-selector">
+          <div class="mode-card" onclick="selectMode('matchmaking')">
+            <h3>⚡ Quick Match</h3>
+            <p>Auto-pair with a random opponent</p>
+            <button>Start Playing</button>
+          </div>
+
+          <div class="mode-card" onclick="selectMode('create-room')">
+            <h3>🔗 Create Room</h3>
+            <p>Create a private room and share the code</p>
+            <button>Create</button>
+          </div>
+
+          <div class="mode-card" onclick="selectMode('join-room')">
+            <h3>📍 Join Room</h3>
+            <p>Enter a room code to play with a friend</p>
+            <button>Join</button>
+          </div>
+        </div>
+
+        <div id="startInputs" style="display: none;">
+          <div class="input-group">
+            <label for="usernameInput">Your Name:</label>
+            <input type="text" id="usernameInput" placeholder="Enter your name..." maxlength="20">
+            <button onclick="startGame()">Continue</button>
+            <button onclick="selectMode(null)" style="background: var(--surface-light);">Back</button>
+          </div>
+        </div>
+
+        <div id="roomInputs" style="display: none;">
+          <div class="input-group">
+            <label for="usernameInput2">Your Name:</label>
+            <input type="text" id="usernameInput2" placeholder="Enter your name..." maxlength="20">
+            <label for="roomCodeInput" id="roomCodeLabel">Room Code:</label>
+            <input type="text" id="roomCodeInput" placeholder="Enter room code..." maxlength="8">
+            <button onclick="handleRoomAction()">Continue</button>
+            <button onclick="selectMode(null)" style="background: var(--surface-light);">Back</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCHMAKING SCREEN -->
+    <div id="matchmakingScreen" class="screen">
+      <div class="matchmaking-screen">
+        <div class="waiting-animation">🔍</div>
+        <h2>Finding Your Opponent...</h2>
+        <div class="queue-info">
+          <p id="queueMessage">Searching for players...</p>
+          <p style="font-size: 0.9rem; margin-top: 10px; color: var(--text-muted);">Position in queue: <span id="queuePosition">1</span></p>
+        </div>
+        <button onclick="cancelMatchmaking()" style="background: var(--error); margin-top: 20px;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="gameScreen" class="screen">
+      <div class="game-screen">
+        <!-- Your Side -->
+        <div class="game-column">
+          <div class="game-header">
+            <div class="player-info">
+              <span class="player-name" id="yourName">You</span>
+              <span class="turn-indicator" id="yourTurn">Waiting...</span>
+            </div>
+            <span id="yourScore" style="font-size: 1.2rem;">Guess The Character</span>
+          </div>
+
+          <div>
+            <h3 style="margin-bottom: 15px;">Characters</h3>
+            <div id="yourCharacterGrid" class="character-grid"></div>
+          </div>
+
+          <div class="question-section">
+            <h3>Ask a Question</h3>
+            <div id="questionPromptArea"></div>
+            <div id="answerButtonsArea"></div>
+            <div id="questionInputArea" class="question-input-group" style="display: none;">
+              <input type="text" id="questionInput" placeholder="Ask a yes/no question..." maxlength="100">
+              <button onclick="askQuestion()" id="askBtn">Ask</button>
+            </div>
+            <div id="waitingMessage" class="waiting-for-question" style="display: none;">
+              Waiting for opponent's question...
+            </div>
+          </div>
+
+          <div class="chat-history">
+            <h3>Question History</h3>
+            <div id="chatContainer" class="chat-empty">No questions yet...</div>
+          </div>
+        </div>
+
+        <!-- Opponent Side -->
+        <div class="game-column">
+          <div class="game-header">
+            <div class="player-info">
+              <span class="player-name" id="opponentName">Opponent</span>
+              <span class="turn-indicator inactive" id="opponentTurn">Waiting...</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 style="margin-bottom: 15px;">Opponent's Cards</h3>
+            <div id="opponentCharacterGrid" class="character-grid"></div>
+          </div>
+
+          <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+            <h3>Make Your Guess</h3>
+            <p style="color: var(--text-muted); text-align: center;">Click on a character below to make your guess</p>
+            <button id="guessBtn" onclick="openGuessModal()" style="padding: 15px 40px; font-size: 1.1rem;">
+              🎯 Select Character to Guess
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="endScreen" class="screen">
+      <div class="end-screen">
+        <div class="result-card">
+          <div class="result-emoji" id="resultEmoji">🎉</div>
+          <div class="result-text" id="resultText">You Won!</div>
+          <div class="result-details" id="resultDetails">
+            Details here
+          </div>
+          <button class="restart-button" onclick="restartGame()">Play Again</button>
+          <button class="home-button" onclick="goHome()">Back to Home</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUESS MODAL -->
+    <div id="guessModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+      <div style="background: var(--surface); padding: 30px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <h2 style="margin-bottom: 20px;">Who do you think it is?</h2>
+        <div id="guessGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-bottom: 20px;"></div>
+        <button onclick="closeGuessModal()" style="width: 100%; background: var(--surface-light);">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    // Game state
+    const gameState = {
+      mode: null,
+      username: '',
+      roomId: null,
+      socket: null,
+      yourSocketId: null,
+      opponentSocketId: null,
+      yourName: '',
+      opponentName: '',
+      characters: [],
+      currentTurn: null,
+      questionHistory: [],
+      yourFlippedCards: new Set(),
+      opponentFlippedCards: new Set(),
+      gameActive: false,
+      currentQuestion: null,
+      selectedGuess: null
+    };
+
+    // Initialize socket
+    function initializeSocket() {
+      gameState.socket = io();
+
+      gameState.socket.on('connect', () => {
+        console.log('Connected to server');
+        gameState.yourSocketId = gameState.socket.id;
+      });
+
+      gameState.socket.on('game_found', (data) => {
+        console.log('Game found:', data);
+        gameState.roomId = data.roomId;
+        gameState.opponentSocketId = data.player1.socketId === gameState.yourSocketId 
+          ? data.player2.socketId 
+          : data.player1.socketId;
+        gameState.opponentName = data.player1.socketId === gameState.yourSocketId 
+          ? data.player2.username 
+          : data.player1.username;
+        gameState.yourName = data.player1.socketId === gameState.yourSocketId 
+          ? data.player1.username 
+          : data.player2.username;
+        gameState.characters = data.characters;
+        gameState.currentTurn = data.currentTurn;
+        gameState.gameActive = true;
+
+        showScreen('gameScreen');
+        renderGame();
+      });
+
+      gameState.socket.on('waiting_for_opponent', (data) => {
+        document.getElementById('queueMessage').textContent = data.message;
+        document.getElementById('queuePosition').textContent = data.queuePosition;
+      });
+
+      gameState.socket.on('room_created', (data) => {
+        gameState.roomId = data.roomId;
+        alert(`Room created! Share this code: ${data.roomId}`);
+        goHome();
+      });
+
+      gameState.socket.on('card_flipped', (data) => {
+        if (data.playerSocketId === gameState.yourSocketId) {
+          gameState.yourFlippedCards = new Set(data.flippedCards);
+        } else {
+          gameState.opponentFlippedCards = new Set(data.flippedCards);
+        }
+        renderGame();
+      });
+
+      gameState.socket.on('question_asked', (data) => {
+        gameState.currentQuestion = data.question;
+        document.getElementById('questionPromptArea').innerHTML = `
+          <div class="question-prompt">
+            <strong>${data.askerName} asks:</strong><br>"${data.question}"
+          </div>
+        `;
+        document.getElementById('answerButtonsArea').innerHTML = `
+          <div class="answer-buttons">
+            <button class="yes-btn" onclick="answerQuestion('YES')">✓ YES</button>
+            <button class="no-btn" onclick="answerQuestion('NO')">✗ NO</button>
+          </div>
+        `;
+      });
+
+      gameState.socket.on('question_answered', (data) => {
+        const questionEntry = {
+          question: gameState.currentQuestion,
+          answer: data.answer,
+          asker: data.answer === 'YES' ? gameState.yourName : data.answerer,
+          answerer: data.answerer
+        };
+        gameState.questionHistory.push(questionEntry);
+        
+        document.getElementById('questionPromptArea').innerHTML = '';
+        document.getElementById('answerButtonsArea').innerHTML = '';
+        document.getElementById('questionInputArea').style.display = 'flex';
+        
+        renderChat();
+        renderGame();
+      });
+
+      gameState.socket.on('turn_changed', (data) => {
+        gameState.currentTurn = data.currentTurn;
+        renderGame();
+      });
+
+      gameState.socket.on('game_finished', (data) => {
+        gameState.gameActive = false;
+        
+        const isYouWinner = data.winner === gameState.yourSocketId;
+        const emoji = isYouWinner ? '🎉' : '💔';
+        const resultText = isYouWinner ? 'You Won! 🏆' : 'You Lost!';
+        const details = isYouWinner 
+          ? `${data.winnerName} correctly guessed ${data.correctCharacter}!`
+          : `${data.loserName}'s guess was wrong. The character was ${data.correctCharacter}.`;
+
+        showEndScreen(emoji, resultText, details);
+      });
+
+      gameState.socket.on('game_restarted', (data) => {
+        gameState.characters = data.characters;
+        gameState.currentTurn = data.currentTurn;
+        gameState.questionHistory = [];
+        gameState.yourFlippedCards.clear();
+        gameState.opponentFlippedCards.clear();
+        gameState.gameActive = true;
+        gameState.currentQuestion = null;
+
+        document.getElementById('questionPromptArea').innerHTML = '';
+        document.getElementById('answerButtonsArea').innerHTML = '';
+        document.getElementById('questionInputArea').style.display = 'flex';
+
+        renderGame();
+        renderChat();
+      });
+
+      gameState.socket.on('opponent_left', (data) => {
+        alert(data.message);
+        goHome();
+      });
+
+      gameState.socket.on('error', (data) => {
+        alert(`Error: ${data.message}`);
+      });
+    }
+
+    // Screen management
+    function showScreen(screenName) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenName).classList.add('active');
+    }
+
+    // Mode selection
+    let selectedMode = null;
+    function selectMode(mode) {
+      selectedMode = mode;
+      document.getElementById('startInputs').style.display = 'none';
+      document.getElementById('roomInputs').style.display = 'none';
+
+      if (mode === 'matchmaking') {
+        document.getElementById('startInputs').style.display = 'block';
+        document.getElementById('usernameInput').focus();
+      } else if (mode === 'create-room') {
+        document.getElementById('roomInputs').style.display = 'block';
+        document.getElementById('roomCodeLabel').textContent = 'Room Name (optional):';
+        document.getElementById('roomCodeInput').placeholder = 'Leave blank for auto-generated ID';
+        document.getElementById('usernameInput2').focus();
+      } else if (mode === 'join-room') {
+        document.getElementById('roomInputs').style.display = 'block';
+        document.getElementById('roomCodeLabel').textContent = 'Room Code:';
+        document.getElementById('roomCodeInput').placeholder = 'Enter the room code...';
+        document.getElementById('usernameInput2').focus();
+      }
+    }
+
+    function startGame() {
+      const username = document.getElementById('usernameInput').value.trim();
+      if (!username) {
+        alert('Please enter your name');
+        return;
+      }
+
+      gameState.username = username;
+      gameState.mode = selectedMode;
+      showScreen('matchmakingScreen');
+      gameState.socket.emit('join_queue', username);
+    }
+
+    function handleRoomAction() {
+      const username = document.getElementById('usernameInput2').value.trim();
+      const roomCode = document.getElementById('roomCodeInput').value.trim();
+
+      if (!username) {
+        alert('Please enter your name');
+        return;
+      }
+
+      gameState.username = username;
+
+      if (selectedMode === 'create-room') {
+        const finalRoomId = roomCode || generateRoomId();
+        gameState.socket.emit('create_room', { username, roomId: finalRoomId });
+      } else if (selectedMode === 'join-room') {
+        if (!roomCode) {
+          alert('Please enter a room code');
+          return;
+        }
+        gameState.socket.emit('join_room', { username, roomId: roomCode.toUpperCase() });
+        showScreen('matchmakingScreen');
+      }
+    }
+
+    function generateRoomId() {
+      return Math.random().toString(36).substr(2, 8).toUpperCase();
+    }
+
+    function cancelMatchmaking() {
+      goHome();
+    }
+
+    // Game rendering
+    function renderGame() {
+      document.getElementById('yourName').textContent = gameState.yourName || 'You';
+      document.getElementById('opponentName').textContent = gameState.opponentName || 'Opponent';
+
+      const isYourTurn = gameState.currentTurn === 'player1' ? gameState.yourSocketId === gameState.socket.id : false;
+      document.getElementById('yourTurn').textContent = isYourTurn ? '✓ Your Turn' : 'Opponent\'s Turn';
+      document.getElementById('yourTurn').classList.toggle('inactive', !isYourTurn);
+      document.getElementById('opponentTurn').textContent = isYourTurn ? 'Opponent\'s Turn' : '✓ Their Turn';
+      document.getElementById('opponentTurn').classList.toggle('inactive', isYourTurn);
+
+      document.getElementById('questionInputArea').style.display = isYourTurn ? 'flex' : 'none';
+      document.getElementById('waitingMessage').style.display = isYourTurn ? 'none' : 'block';
+
+      renderCharacterGrid('yourCharacterGrid', gameState.yourFlippedCards, true);
+      renderCharacterGrid('opponentCharacterGrid', gameState.opponentFlippedCards, false);
+    }
+
+    function renderCharacterGrid(gridId, flippedCards, isClickable) {
+      const grid = document.getElementById(gridId);
+      grid.innerHTML = '';
+
+      gameState.characters.forEach(char => {
+        const card = document.createElement('div');
+        card.className = 'character-card';
+        if (flippedCards.has(char.id)) {
+          card.classList.add('flipped');
+        }
+        
+        // Render with image
+        card.innerHTML = `
+          <div class="character-avatar">
+            <img src="${char.image}" 
+                 alt="${char.name}"
+                 onerror="this.src='https://i.pravatar.cc/200?img=${char.id}'"
+                 loading="lazy">
+          </div>
+          <div class="character-name">${char.name}</div>
+        `;
+
+        if (isClickable) {
+          card.addEventListener('click', () => {
+            gameState.socket.emit('flip_card', { roomId: gameState.roomId, cardId: char.id });
+          });
+        }
+
+        grid.appendChild(card);
+      });
+    }
+
+    function renderChat() {
+      const chatContainer = document.getElementById('chatContainer');
+      if (gameState.questionHistory.length === 0) {
+        chatContainer.innerHTML = '<div class="chat-empty">No questions yet...</div>';
+        return;
+      }
+
+      chatContainer.innerHTML = gameState.questionHistory.map((q, idx) => `
+        <div class="chat-message">
+          <div class="chat-question">Q: ${q.question}</div>
+          <div class="chat-answer">A: ${q.answer} (${q.answerer})</div>
+        </div>
+      `).join('');
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function askQuestion() {
+      const input = document.getElementById('questionInput');
+      const question = input.value.trim();
+
+      if (!question) {
+        alert('Please enter a question');
+        return;
+      }
+
+      gameState.currentQuestion = question;
+      gameState.socket.emit('ask_question', { roomId: gameState.roomId, question });
+      input.value = '';
+      document.getElementById('questionInputArea').style.display = 'none';
+      document.getElementById('waitingMessage').style.display = 'block';
+    }
+
+    function answerQuestion(answer) {
+      gameState.socket.emit('answer_question', {
+        roomId: gameState.roomId,
+        answer,
+        askerSocketId: gameState.yourSocketId
+      });
+
+      gameState.socket.emit('store_question', {
+        roomId: gameState.roomId,
+        question: gameState.currentQuestion,
+        answer,
+        asker: gameState.opponentName,
+        answerer: gameState.yourName
+      });
+    }
+
+    function openGuessModal() {
+      const modal = document.getElementById('guessModal');
+      const guessGrid = document.getElementById('guessGrid');
+      guessGrid.innerHTML = '';
+
+      gameState.characters.forEach(char => {
+        const card = document.createElement('div');
+        card.className = 'character-card';
+        card.style.cursor = 'pointer';
+        card.innerHTML = `
+          <div class="character-avatar">👤</div>
+          <div class="character-name">${char.name}</div>
+        `;
+        card.addEventListener('click', () => {
+          gameState.selectedGuess = char.id;
+          confirmGuess(char.name);
+        });
+        guessGrid.appendChild(card);
+      });
+
+      modal.style.display = 'flex';
+    }
+
+    function closeGuessModal() {
+      document.getElementById('guessModal').style.display = 'none';
+    }
+
+    function confirmGuess(characterName) {
+      if (confirm(`Are you sure? You think the character is ${characterName}?`)) {
+        gameState.socket.emit('make_guess', {
+          roomId: gameState.roomId,
+          guessCharacterId: gameState.selectedGuess
+        });
+        closeGuessModal();
+      }
+    }
+
+    function showEndScreen(emoji, text, details) {
+      document.getElementById('resultEmoji').textContent = emoji;
+      document.getElementById('resultText').textContent = text;
+      document.getElementById('resultDetails').textContent = details;
+      showScreen('endScreen');
+    }
+
+    function restartGame() {
+      gameState.socket.emit('restart_game', { roomId: gameState.roomId });
+      showScreen('gameScreen');
+    }
+
+    function goHome() {
+      gameState.mode = null;
+      gameState.username = '';
+      gameState.roomId = null;
+      gameState.yourSocketId = null;
+      gameState.questionHistory = [];
+      gameState.yourFlippedCards.clear();
+      gameState.opponentFlippedCards.clear();
+      showScreen('startScreen');
+    }
+
+    // Initialize
+    initializeSocket();
+  </script>
+</body>
+</html>
