@@ -13,7 +13,7 @@ const io = socketIo(server, {
 });
 
 // Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // Character database - 24 unique characters with real images
 // Using diverse avatar API for realistic character images
